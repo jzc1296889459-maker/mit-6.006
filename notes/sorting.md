@@ -1,42 +1,104 @@
 
-# Sorting Algorithms — Selection, Insertion, Merge
 
-**Course:** MIT 6.006
-**Date:**
-**Goal:** Understand algorithm structure, correctness idea, and time complexity reasoning.
+# Sorting — Comparison Model, Direct Access, Counting Sort, Radix Sort
+
+**Course:** MIT 6.006  
+**Goal:** Understand sorting from three unified perspectives:
+
+- comparison model limits  
+- structural algorithm design  
+- direct-access methods (counting & radix sort)
 
 ---
 
 # 1. Problem Definition
 
-Given an array ( A[0 \dots n-1] ), sort it in non-decreasing order.
+Given an array $A[0 \dots n-1]$, sort it in non-decreasing order.
 
-We measure:
+We analyze:
 
-* Time complexity (worst-case unless stated)
-* Space complexity
-* Stability
-* Structural idea
+- time complexity (worst-case unless stated)
+- space complexity
+- stability
+- structural idea
 
 ---
 
-# 2. Selection Sort
+# 2. Sorting in the Comparison Model
 
-## Idea
+## Model
+
+Allowed operation:
+
+$$
+\text{compare}(x_i, x_j)
+$$
+
+Sorting must determine the correct permutation among:
+
+$$
+n!
+$$
+
+possible permutations.
+
+---
+
+## Decision Tree Argument
+
+Each comparison splits possibilities in two.
+
+A binary decision tree of height $h$ has ≤ $2^h$ leaves.
+
+We need $≥ n!$ leaves:
+
+$$
+2^h \ge n!
+\Rightarrow h \ge \log_2(n!)
+$$
+
+Using Stirling approximation:
+
+$$
+\log(n!) = \Theta(n\log n)
+$$
+
+So any comparison-based sorting algorithm needs:
+
+$$
+\Omega(n\log n)
+$$
+
+comparisons.
+
+---
+
+## Conclusion
+
+In the comparison model:
+
+$$
+\Theta(n\log n)
+$$
+
+is optimal.
+
+---
+
+# 3. Quadratic Algorithms
+
+## Selection Sort
+
+### Idea
 
 Repeatedly:
 
-* Find the minimum element in the unsorted portion
-* Swap it with the first unsorted position
-
-The array is divided into:
-
-* Sorted prefix
-* Unsorted suffix
+- find minimum in unsorted suffix  
+- swap into next position  
 
 ---
 
-## Pseudocode
+### Pseudocode
 
 ```python
 for i in range(n):
@@ -45,60 +107,47 @@ for i in range(n):
         if A[j] < A[min_index]:
             min_index = j
     swap(A[i], A[min_index])
-```
+````
 
 ---
 
-## Time Complexity
+### Complexity
 
-Outer loop runs ( n ) times.
+Comparisons:
 
-Inner loop runs:
-[
-(n-1) + (n-2) + \dots + 1
-]
+$$
+(n-1)+(n-2)+\dots+1=\Theta(n^2)
+$$
 
-Total comparisons:
-[
-\frac{n(n-1)}{2} = \Theta(n^2)
-]
-
-So:
-
-* Worst-case time: ( \Theta(n^2) )
-* Best-case time: ( \Theta(n^2) )
-* Space: ( O(1) )
+* worst-case: $\Theta(n^2)$
+* best-case: $\Theta(n^2)$
+* space: $O(1)$
 
 ---
 
-## Observations
+### Observations
 
-* Number of swaps ≤ n
-* Number of comparisons fixed
-* Not stable (unless modified carefully)
-* Very simple but inefficient for large n
-
----
-
-# 3. Insertion Sort
-
-## Idea
-
-Maintain a sorted prefix.
-
-Insert each new element into its correct position in that prefix.
-
-Think: how you sort cards in your hand.
+* few swaps
+* fixed work regardless of input
+* not stable
 
 ---
 
-## Pseudocode
+## Insertion Sort
+
+### Idea
+
+Maintain sorted prefix; insert next element into correct position.
+
+---
+
+### Pseudocode
 
 ```python
-for i in range(1, n):
+for i in range(1,n):
     key = A[i]
-    j = i - 1
-    while j >= 0 and A[j] > key:
+    j = i-1
+    while j>=0 and A[j] > key:
         A[j+1] = A[j]
         j -= 1
     A[j+1] = key
@@ -106,66 +155,55 @@ for i in range(1, n):
 
 ---
 
-## Time Complexity
+### Complexity
 
-Worst case (reverse sorted):
+Worst-case:
 
-Each insertion shifts ~i elements.
+$$
+1+2+\dots+(n-1)=\Theta(n^2)
+$$
 
-Total work:
-[
-1 + 2 + \dots + (n-1)
-= \frac{n(n-1)}{2}
-= \Theta(n^2)
-]
+Best-case:
 
-Best case (already sorted):
-
-Inner loop never runs.
-
-Time: ( \Theta(n) )
+$$
+\Theta(n)
+$$
 
 ---
 
-## Observations
+### Observations
 
-* Worst-case: ( \Theta(n^2) )
-* Best-case: ( \Theta(n) )
-* Space: ( O(1) )
-* Stable
-* Adaptive (fast if nearly sorted)
-
-Better than selection sort in practice for small n.
+* stable
+* adaptive
+* excellent for small (n)
 
 ---
 
-# 4. Merge Sort
+# 4. Merge Sort (First Optimal Algorithm)
 
 ## Idea
 
 Divide-and-conquer:
 
-1. Divide array into two halves.
-2. Recursively sort each half.
-3. Merge the two sorted halves.
+1. split array
+2. recursively sort halves
+3. merge
 
 ---
 
 ## Merge Procedure
 
-Given two sorted arrays L and R:
-
 ```python
-def merge(L, R):
-    i = j = 0
-    result = []
-    while i < len(L) and j < len(R):
-        if L[i] <= R[j]:
+def merge(L,R):
+    i=j=0
+    result=[]
+    while i<len(L) and j<len(R):
+        if L[i]<=R[j]:
             result.append(L[i])
-            i += 1
+            i+=1
         else:
             result.append(R[j])
-            j += 1
+            j+=1
     result.extend(L[i:])
     result.extend(R[j:])
     return result
@@ -175,93 +213,265 @@ def merge(L, R):
 
 ## Recurrence
 
-Let ( T(n) ) be running time.
-
-Divide:
-[
-2T(n/2)
-]
-
-Merge:
-[
-\Theta(n)
-]
-
-So:
-
-[
-T(n) = 2T(n/2) + \Theta(n)
-]
-
-By Master Theorem:
-
-[
-T(n) = \Theta(n \log n)
-]
+$$
+T(n)=2T(n/2)+\Theta(n)
+\Rightarrow T(n)=\Theta(n\log n)
+$$
 
 ---
 
 ## Observations
 
-* Worst-case: ( \Theta(n \log n) )
-* Best-case: ( \Theta(n \log n) )
-* Stable
-* Requires ( O(n) ) extra space
+* stable
+* optimal (comparison model)
+* needs (O(n)) extra space
 
 ---
 
-# 5. Structural Comparison
+# 5. Breaking the Comparison Barrier
 
-| Algorithm | Worst Case  | Best Case   | Stable | Extra Space |
-| --------- | ----------- | ----------- | ------ | ----------- |
-| Selection | ( n^2 )     | ( n^2 )     | No     | O(1)        |
-| Insertion | ( n^2 )     | ( n )       | Yes    | O(1)        |
-| Merge     | ( n\log n ) | ( n\log n ) | Yes    | O(n)        |
+The lower bound applies only if:
 
----
+👉 algorithm uses comparisons only.
 
-# 6. Conceptual Takeaways
+If keys have structure (like integers or digits):
 
-### Quadratic algorithms:
-
-* Compare every pair
-* No structural shortcut
-* Good for small n
-
-### Merge sort:
-
-* Uses recursion
-* Exploits structure
-* First algorithm breaking ( n^2 )
+👉 we can do better.
 
 ---
 
-# 7. Big Picture Insight
+# 6. Direct Access Perspective
 
-Sorting in the **comparison model** has lower bound:
+Suppose keys lie in:
 
-[
-\Omega(n \log n)
-]
+$$
+0 \le k \le m
+$$
 
-So merge sort is asymptotically optimal.
-
-Insertion and selection are not.
+We can store items directly by key.
 
 ---
 
-# 8. Reflection Questions
+## Direct Placement (Unique Keys)
 
-1. Why can’t we do better than ( n \log n ) using only comparisons?
-2. Why does insertion sort become linear when input is nearly sorted?
-3. Why does merge sort need extra memory?
-4. Can merge sort be made in-place?
+```python
+B[key] = x
+```
+
+Time:
+
+$$
+O(n+m)
+$$
+
+Works only if keys distinct.
 
 ---
 
+## Bucketed Version (Duplicates Allowed)
+
+```python
+B[key].append(x)
+```
+
+Output sequentially:
+
+```python
+for k in range(m+1):
+    output.extend(B[k])
+```
+
+Still:
+
+$$
+O(n+m)
+$$
+
 ---
 
-If you want, next I can:
+# 7. Counting Sort
 
-* Upgrade this note to a more “research-style” version (less textbook, more structural reasoning)
-* Or show you how to turn these notes into a pattern you can reuse for every algorithm in 6.006
+Counting sort improves direct access by computing exact positions.
+
+---
+
+## Algorithm
+
+### Step 1 — Count
+
+```python
+count[key] += 1
+```
+
+---
+
+### Step 2 — Prefix Sums
+
+```python
+count[k] = number of elements ≤ k
+```
+
+---
+
+### Step 3 — Place
+
+```python
+output[count[key]-1] = x
+count[key] -= 1
+```
+
+---
+
+## Complexity
+
+$$
+O(n+m)
+$$
+
+Works well when:
+
+$$
+m = O(n)
+$$
+
+---
+
+## Observations
+
+* stable
+* no comparisons
+* ideal for integer keys
+
+---
+
+# 8. Radix Sort
+
+## Core Idea
+
+Instead of sorting numbers directly:
+
+👉 break them into digits.
+
+---
+
+## Representation
+
+Largest key ≤ $m$.
+
+In base $b$, digits needed:
+
+$$
+d=\lceil \log_b m \rceil
+$$
+
+---
+
+## Algorithm (LSD Version)
+
+For each digit (least → most significant):
+
+👉 stable counting sort.
+
+---
+
+## Runtime
+
+Each pass:
+
+$$
+O(n+b)
+$$
+
+Total:
+
+$$
+O(d(n+b)).
+$$
+
+---
+
+## Choosing Base
+
+Choose:
+
+$$
+b=n
+$$
+
+Then:
+
+$$
+O(n\log_n m).
+$$
+
+If:
+
+$$
+m=n^c
+\Rightarrow O(n).
+$$
+
+---
+
+## Observations
+
+* stability required
+* beats comparison sorting
+* widely used in practice
+
+---
+
+# 9. Structural Comparison
+
+| Algorithm | Model         | Worst Case  | Stable | Space  |
+| --------- | ------------- | ----------- | ------ | ------ |
+| Selection | Comparison    | $n^2$       | No     | $O(1)$   |
+| Insertion | Comparison    | $n^2$      | Yes    | $O(1)$   |
+| Merge     | Comparison    | $n\log n$  | Yes    | $O(n)$  |
+| Counting  | Direct Access | $n+m$       | Yes    | $O(m)$   |
+| Radix     | Direct Access | $n\log_n m$| Yes    | $O(n+m)$ |
+
+---
+
+# 10. Big Picture Insight
+
+Two worlds:
+
+### Comparison world
+
+* insertion
+* selection
+* merge
+* heap
+* quicksort
+
+Bounded by:
+
+$$
+\Omega(n\log n).
+$$
+
+---
+
+### Direct-access world
+
+* counting sort
+* radix sort
+
+Exploit:
+
+👉 structure of keys.
+
+---
+
+# 11. Reflection Questions
+
+1. Why does comparison sorting need $n\log n$?
+2. When is counting sort practical?
+3. Why must radix sort use stable sorting?
+4. How does base choice affect runtime?
+
+---
+
+
+
