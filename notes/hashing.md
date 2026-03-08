@@ -37,8 +37,9 @@ $$
 We create an array of size $m$:
 
 
-
+$$
 A[0 ... m-1]
+$$
 
 
 
