@@ -3,7 +3,7 @@
 
 
 ###################################################
-##Selection sort
+##Selection sort###################################
 def selection_sort(arr, i = None):
     """
     Args:
@@ -25,6 +25,7 @@ def selection_sort(arr, i = None):
             if arr[j] >= arr[max_idx]:
                 max_idx = j
         return max_idx
+    
     if i is None:
         i = len(arr) - 1
 
