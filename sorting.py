@@ -34,4 +34,27 @@ def selection_sort(arr, i = None):
         arr[i], arr[j] = arr[j], arr[i]
         selection_sort(arr, i-1)
 
+###################################################
+##Merge_sort
+def merge(L, R, arr, i, j, a, b):
+    if a < b:
+        if j <= 0 or (i > 0 and L[i-1] > R[j-1]):
+            arr[b-1] - L[i-1]
+            i = i - 1
+        else:
+            arr[b-1] = L[j-1]
+            j = j - 1
+        merge(L, R, arr, i, j, a, b-1)
+
+def merge_sort(arr, a = 0, b = None):
+    if b is None:
+        b = len(arr)
+    if b - a > 1:
+        c = (a+b)//2
+        merge_sort(arr, a, c)
+        merge_sort(arr, c, b)
+        L, R = arr[a:c], arr[c:b]
+        merge(L, R, arr, len(L), len(R), a, b)
+     
+
 
